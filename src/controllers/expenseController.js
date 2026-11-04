@@ -1,4 +1,8 @@
-const { getAllExpenses, getExpenseById, createExpense, deleteExpense} = require("../services/expenseService");
+const { getAllExpenses,
+    getExpenseById,
+    createExpense,
+    deleteExpense,
+    updateExpense } = require("../services/expenseService");
 
 const getExpenses = async (req, res) => {
     try {
@@ -58,11 +62,26 @@ const deleteExpenseController = async (req, res) => {
         if (!deleted) {
             return res.status(404).json({ message: "Spesa non trovata" });
         }
-        res.status(200).json({ message: "Spesa eliminata con successo" });  
+        res.status(200).json({ message: "Spesa eliminata con successo" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Errore nell'eliminazione della spesa" });
     }
 };
 
-module.exports = { getExpenses, getExpenseByIdController, createExpenseController, deleteExpenseController };
+const updateExpenseController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount } = req.body;
+        const updated = await updateExpense(id, amount);
+        if (!updated) {
+            return res.status(404).json({ message: "Spesa non trovata" });
+        }
+        return res.status(200).json({ message: "Spesa aggiornata con successo" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Errore nell'aggiornamento della spesa" });
+    }
+};
+
+module.exports = { getExpenses, getExpenseByIdController, createExpenseController, deleteExpenseController, updateExpenseController };
