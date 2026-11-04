@@ -25,4 +25,9 @@ const deleteExpense = async (id) => {
     return result.affectedRows > 0;
 }
 
-module.exports = { getAllExpenses, getExpenseById, createExpense, deleteExpense };
+const updateExpense = async (id, amount) => {
+    const [result] = await pool.promise().query("UPDATE expenses SET amount = ? WHERE id = ?", [amount, id]);
+    return result.affectedRows > 0;
+}   
+
+module.exports = { getAllExpenses, getExpenseById, createExpense, deleteExpense, updateExpense };
