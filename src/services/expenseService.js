@@ -12,11 +12,19 @@ const getExpenseById = async (id) => {
 };
 
 const createExpense = async (expenseData) => {
-    const { details, amount, date_time, group_id, paid_by } = expenseData;
+    const { details, amount, date_time, group_id, paid_by, shares } = expenseData;
     const [result] = await pool.promise().query(
         "INSERT INTO expenses (details, amount, date_time, group_id, paid_by) VALUES (?, ?, ?, ?, ?)",
         [details, amount, date_time, group_id, paid_by]
     );
+    for (let i = 0; i < shares.length; i++) {
+    const share = shares[i];
+     await createExpenseShare({
+    expense_id: result.insertId,
+    user_id: share.user_id,
+    share_amount: share.share_amount
+});
+}
     return result.insertId;
 };
 
@@ -30,4 +38,14 @@ const updateExpense = async (id, amount) => {
     return result.affectedRows > 0;
 }   
 
-module.exports = { getAllExpenses, getExpenseById, createExpense, deleteExpense, updateExpense };
+const createExpenseShare = async(sharesData) => {
+    const { expense_id, user_id, share_amount } = sharesData;
+    const [result] = await pool.promise().query(
+        "INSERT INTO expense_shares (expense_id, user_id, share_amount) VALUES (?, ?, ?)",
+        [expense_id, user_id, share_amount]
+    );
+    return result.insertId;
+
+}
+
+module.exports = { getAllExpenses, getExpenseById, createExpense, deleteExpense, updateExpense, createExpenseShare };

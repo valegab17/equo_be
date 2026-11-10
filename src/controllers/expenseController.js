@@ -1,8 +1,4 @@
-const { getAllExpenses,
-    getExpenseById,
-    createExpense,
-    deleteExpense,
-    updateExpense } = require("../services/expenseService");
+const { getAllExpenses, getExpenseById, createExpense, deleteExpense, updateExpense } = require("../services/expenseService");
 
 const getExpenses = async (req, res) => {
     try {
@@ -73,11 +69,16 @@ const updateExpenseController = async (req, res) => {
     try {
         const { id } = req.params;
         const { amount } = req.body;
+        if (amount <= 0 || typeof amount === 'string') {
+            return res.status(400).json({
+                message: "L'importo deve essere un numero maggiore di 0"
+            });
+        }
         const updated = await updateExpense(id, amount);
         if (!updated) {
             return res.status(404).json({ message: "Spesa non trovata" });
         }
-        return res.status(200).json({ message: "Spesa aggiornata con successo" });
+        res.status(200).json({ message: "Spesa aggiornata con successo" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Errore nell'aggiornamento della spesa" });
