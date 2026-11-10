@@ -1,5 +1,5 @@
 const pool = require("../config/db");
-
+const validateExpenseShares = require("../validators/expenseValidator");
 const getAllExpenses = async () => {
     const [rows] = await pool.promise().query("SELECT * FROM expenses");
 
@@ -35,7 +35,7 @@ const createExpense = async (expenseData) => {
     if (sumInCents !== amountInCents) {
         throw new Error("La somma delle quote non corrisponde all'importo totale!");
     }
-
+    await validateExpenseShares(group_id, shares)
 
     let connection;
 
