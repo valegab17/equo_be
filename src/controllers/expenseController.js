@@ -34,13 +34,14 @@ const getExpenseByIdController = async (req, res) => {
 
 const createExpenseController = async (req, res) => {
     try {
-        const { details, amount, date_time, group_id, paid_by } = req.body;
+        const { details, amount, date_time, group_id, paid_by, shares } = req.body;
         const expenseId = await createExpense({
             details,
             amount,
             date_time,
             group_id,
-            paid_by
+            paid_by,
+            shares
         });
         res.status(201).json({ id: expenseId });
     } catch (error) {
