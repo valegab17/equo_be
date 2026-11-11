@@ -1,4 +1,6 @@
+
 const pool = require("../config/db");
+const validateExpenseShares = require("../validator/expenseValidator");
 
 const getAllExpenses = async () => {
     const [rows] = await pool.promise().query("SELECT * FROM expenses");
@@ -7,26 +9,28 @@ const getAllExpenses = async () => {
 };
 
 const getExpenseById = async (id) => {
-    const [rows] = await pool.promise().query("SELECT * FROM expenses WHERE id = ?", [id]);
+    const [rows] = await pool.promise().query(
+        "SELECT * FROM expenses WHERE id = ?", [id]
+    );
+
     return rows[0];
 };
 
 const createExpense = async (expenseData) => {
     const { details, amount, date_time, group_id, paid_by, shares } = expenseData;
 
-    //mi assicuro che la somma di tutte le shares_amount corrisponda ad amount
+    // Mi assicuro che la somma delle quote corrisponda all'importo totale
     const sum = shares.reduce((acc, curr) => {
-        //controllo che la shares sia un numero 
         if (typeof curr.share_amount !== 'number' || curr.share_amount <= 0) {
             throw new Error("La quota deve essere un numero maggiore di zero");
         }
-        return acc + curr.share_amount
-    }, 0)
-    //se diverso da amount throw new Error
-    if (sum !== amount) {
-        throw new Error("La somma delle quote non corrisponde all'importo totale!")
-    }
 
+        return acc + curr.share_amount;
+    }, 0);
+
+    if (sum !== amount) {
+        throw new Error("La somma delle quote non corrisponde all'importo totale!");
+    }
 
     // Confronto degli importi in centesimi
     const sumInCents = Math.round(sum * 100);
@@ -36,6 +40,7 @@ const createExpense = async (expenseData) => {
         throw new Error("La somma delle quote non corrisponde all'importo totale!");
     }
 
+    await validateExpenseShares(group_id, paid_by, shares);
 
     let connection;
 
@@ -85,14 +90,20 @@ const createExpense = async (expenseData) => {
 };
 
 const deleteExpense = async (id) => {
-    const [result] = await pool.promise().query("DELETE FROM expenses WHERE id = ?", [id]);
+    const [result] = await pool.promise().query(
+        "DELETE FROM expenses WHERE id = ?", [id]
+    );
+
     return result.affectedRows > 0;
-}
+};
 
 const updateExpense = async (id, amount) => {
-    const [result] = await pool.promise().query("UPDATE expenses SET amount = ? WHERE id = ?", [amount, id]);
+    const [result] = await pool.promise().query(
+        "UPDATE expenses SET amount = ? WHERE id = ?", [amount, id]
+    );
+
     return result.affectedRows > 0;
-}
+};
 
 const createExpenseShare = async (connection, sharesData) => {
     const { expense_id, user_id, share_amount } = sharesData;
@@ -105,4 +116,11 @@ const createExpenseShare = async (connection, sharesData) => {
     return result.insertId;
 };
 
-module.exports = { getAllExpenses, getExpenseById, createExpense, deleteExpense, updateExpense, createExpenseShare };
+module.exports = {
+    getAllExpenses,
+    getExpenseById,
+    createExpense,
+    deleteExpense,
+    updateExpense,
+    createExpenseShare
+};
