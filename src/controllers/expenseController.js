@@ -69,20 +69,27 @@ const deleteExpenseController = async (req, res) => {
 const updateExpenseController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { amount } = req.body;
-        if (amount <= 0 || typeof amount === 'string') {
+        const { details, amount, paid_by, shares } = req.body;
+        if (typeof amount !== 'number' || amount <= 0) {
             return res.status(400).json({
                 message: "L'importo deve essere un numero maggiore di 0"
             });
         }
-        const updated = await updateExpense(id, amount);
-        if (!updated) {
-            return res.status(404).json({ message: "Spesa non trovata" });
-        }
+        await updateExpense(id, { details, amount, paid_by, shares });
+      
         res.status(200).json({ message: "Spesa aggiornata con successo" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Errore nell'aggiornamento della spesa" });
+
+        if (error.message === "Spesa non trovata") {
+            return res.status(404).json({
+                message: error.message
+            });
+        }
+
+        return res.status(400).json({
+            message: error.message
+        }); 
     }
 };
 
