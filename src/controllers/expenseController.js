@@ -75,8 +75,14 @@ const updateExpenseController = async (req, res) => {
                 message: "L'importo deve essere un numero maggiore di 0"
             });
         }
+
+        if (typeof details !== "string" || details.trim() === "") {
+            return res.status(400).json({
+                message: "La descrizione della spesa è obbligatoria"
+            });
+        }
         await updateExpense(id, { details, amount, paid_by, shares });
-      
+
         res.status(200).json({ message: "Spesa aggiornata con successo" });
     } catch (error) {
         console.error(error);
@@ -89,7 +95,7 @@ const updateExpenseController = async (req, res) => {
 
         return res.status(400).json({
             message: error.message
-        }); 
+        });
     }
 };
 
